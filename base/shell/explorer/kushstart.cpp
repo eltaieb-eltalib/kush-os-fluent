@@ -932,6 +932,10 @@ KushPaint(KS_STATE *p, HDC hdc)
             DrawIconEx(hdcMem, p->rcSearch.left + 4, cy0 - 8, hIco, 16, 16, 0, NULL, DI_NORMAL);
             DestroyIcon(hIco);
         }
+        else
+        {
+            DbgPrint("KUSH-DBG search magnifier icon load FAILED err=%lu\n", GetLastError());
+        }
     }
 
     /* section header */
@@ -1129,6 +1133,8 @@ KushEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     if (uMsg == WM_CHAR && wParam == VK_ESCAPE)
         return 0;
+    if (uMsg == WM_CHAR)
+        DbgPrint("KUSH-DBG edit WM_CHAR wp=%u tick=%lu\n", (UINT)wParam, GetTickCount());
     if (uMsg == WM_GETDLGCODE)
         return DLGC_WANTALLKEYS;
     return CallWindowProcW(g_ks.pfnOldEdit, hwnd, uMsg, wParam, lParam);
@@ -1270,6 +1276,7 @@ KushStartProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CHAR:
         /* typing while the grid has focus goes to the search box */
+        DbgPrint("KUSH-DBG menu WM_CHAR wp=%u tick=%lu\n", (UINT)wParam, GetTickCount());
         if (p->hwndEdit && wParam >= 32)
         {
             SetFocus(p->hwndEdit);
