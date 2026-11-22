@@ -22,6 +22,15 @@ Build (Linux, mingw-w64 **posix** toolchain, cmake, ninja, bison, flex, libgmp-d
    `uefildr.efi` to `EFI/BOOT/BOOTX64.EFI`, `freeldr.ini` to the root, and the
    `reactos` tree. Write it with Rufus in DD mode, UEFI only, Secure Boot off.
 
+## تصميم Fluent (شغل جاري — WIP)
+
+بنية Kush 1.1 Fluent قيد التنفيذ حسب `docs/design/kush-fluent-plan.md` (فيه جدول الحالة محدّث لكل مرحلة).
+المرفوع لحد الآن: قائمة Start جديدة في النص + شريط مهام فاتح 48px (`kushstart.cpp`/`traywnd.cpp`/`taskswnd.cpp`)،
+خطوط Inter و Noto Sans Arabic (OFL) مع بدائل مسجلة في `font.inf`، ومجموعة أيقونات Fluent UI System Icons (MIT)
+متولدة بـ `tools/icons/build_fluent_icons.py`. كل ميزة وراها مفتاح ريجستري (`HKCU\Software\Kush\Shell`) يرجّع الشكل الكلاسيكي.
+**الأصول كلها قانونية**: Fluent UI System Icons (MIT)، Inter (OFL)، Noto Sans Arabic (OFL) — إشعارات الرخص في `media/fonts/` و `media/icons/`.
+حالة التحقق: بانتظار صور QEMU من أول ISO بعد الاسترجاع — ما بيتم إعلان أي مرحلة "تمت" بدون صورة إثبات.
+
 ## Modifications (vs ReactOS master 344ebfe5)
 
 - **Sudanese rebrand** — ProductName "Kush 1.1", setup wizard / explorer /
