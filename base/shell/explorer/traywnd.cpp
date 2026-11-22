@@ -525,9 +525,20 @@ public:
          * Re-enable defensively and log what state we found. */
         {
             BOOL bEnabled = ::IsWindowEnabled(m_hWnd);
-            DbgPrint("KUSH-DBG DoExitWindows: after dialog, tray enabled=%d\n", bEnabled);
+            BOOL bBtnEnabled = ::IsWindowEnabled(m_StartButton.m_hWnd);
+            RECT rcBtn;
+            m_StartButton.GetWindowRect(&rcBtn);
+            POINT ptC = { (rcBtn.left + rcBtn.right) / 2, (rcBtn.top + rcBtn.bottom) / 2 };
+            HWND hAt = ::WindowFromPoint(ptC);
+            WCHAR szCls[64] = {0};
+            if (hAt)
+                GetClassNameW(hAt, szCls, _countof(szCls) - 1);
+            DbgPrint("KUSH-DBG DoExitWindows: after dialog, tray enabled=%d btn enabled=%d wfp=%p cls=%S capture=%p fg=%p\n",
+                     bEnabled, bBtnEnabled, (PVOID)hAt, szCls, (PVOID)::GetCapture(), (PVOID)::GetForegroundWindow());
             if (!bEnabled)
                 ::EnableWindow(m_hWnd, TRUE);
+            if (!bBtnEnabled)
+                ::EnableWindow(m_StartButton.m_hWnd, TRUE);
         }
 
         /*
