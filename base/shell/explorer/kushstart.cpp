@@ -81,6 +81,7 @@ typedef struct _KS_STATE
     int cellW, cellH, nCols;
     WNDPROC pfnOldEdit;
     WCHAR szUser[64];
+    DWORD dwOpenTick;     /* GetTickCount() when the window was shown */
 } KS_STATE;
 
 static KS_STATE g_ks;
@@ -1154,7 +1155,15 @@ KushStartProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             /* Clicking the Start button (or anywhere on the tray) must close
              * the menu via the tray's toggle path, not race a reopen: close
              * through a posted message so the tray's click handler runs our
-             * toggle first. Any other focus loss closes immediately. */
+             * toggle first. Any other focus loss closes immediately.
+             * Guard: activation shuffle left over from the window's own
+             * opening (e.g. after a modal dialog owned the foreground) must
+             * not kill a menu that just opened. */
+            if (GetTickCount() - p->dwOpenTick < 500)
+            {
+                DbgPrint("KUSH-DBG WA_INACTIVE within open guard, ignored (lParam=%p)\n", (PVOID)lParam);
+                return 0;
+            }
             if ((HWND)lParam == p->hwndTray && lParam != NULL)
                 PostMessageW(hwnd, WM_APP + 41, 0, 0);
             else
@@ -1164,6 +1173,11 @@ KushStartProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_APP + 41: /* deferred close after tray activation */
+        if (GetTickCount() - p->dwOpenTick < 500)
+        {
+            DbgPrint("KUSH-DBG deferred close within open guard, ignored\n");
+            return 0;
+        }
         KushStart_Hide();
         return 0;
 
@@ -1408,6 +1422,8 @@ KushStart_Toggle(HWND hTray)
 
     ShowWindow(g_ks.hwnd, SW_SHOW);
     SetForegroundWindow(g_ks.hwnd);
+    g_ks.dwOpenTick = GetTickCount();
+    DbgPrint("KUSH-DBG Toggle: opened hwnd=%p tick=%lu\n", g_ks.hwnd, g_ks.dwOpenTick);
     if (g_ks.hwndEdit)
         SetFocus(g_ks.hwndEdit);
     /* Foreground activation can complete asynchronously; re-assert focus on

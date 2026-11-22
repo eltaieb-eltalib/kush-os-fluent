@@ -330,6 +330,7 @@ public:
         if (uMsg == WM_KEYUP && wParam != VK_SPACE)
             return 0;
 
+        DbgPrint("KUSH-DBG start button: click -> TWM_OPENSTARTMENU\n");
         GetParent().PostMessage(TWM_OPENSTARTMENU);
         return 0;
     }
@@ -3249,6 +3250,7 @@ HandleTrayContextMenu:
     {
         HWND hwndStartMenu;
 
+        DbgPrint("KUSH-DBG OnOpenStartMenu: kushOpen=%d\n", KushStart_IsOpen());
         if (KushStart_IsOpen())
         {
             HideStartMenu();
