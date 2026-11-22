@@ -822,8 +822,8 @@ KushLayout(KS_STATE *p)
     SetRect(&p->rcUser, margin + 8, p->rcBottom.top + 8, margin + 260, p->rcBottom.top + 48);
 
     if (p->hwndEdit)
-        MoveWindow(p->hwndEdit, p->rcSearch.left + 14, p->rcSearch.top + 6,
-                   (p->rcSearch.right - p->rcSearch.left) - 28,
+        MoveWindow(p->hwndEdit, p->rcSearch.left + 22, p->rcSearch.top + 6,
+                   (p->rcSearch.right - p->rcSearch.left) - 36,
                    (p->rcSearch.bottom - p->rcSearch.top) - 12, TRUE);
 }
 
