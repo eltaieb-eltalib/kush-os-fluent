@@ -526,6 +526,7 @@ public:
         {
             BOOL bEnabled = ::IsWindowEnabled(m_hWnd);
             BOOL bBtnEnabled = ::IsWindowEnabled(m_StartButton.m_hWnd);
+            BOOL bBtnVisible = ::IsWindowVisible(m_StartButton.m_hWnd);
             RECT rcBtn;
             m_StartButton.GetWindowRect(&rcBtn);
             POINT ptC = { (rcBtn.left + rcBtn.right) / 2, (rcBtn.top + rcBtn.bottom) / 2 };
@@ -533,12 +534,23 @@ public:
             WCHAR szCls[64] = {0};
             if (hAt)
                 GetClassNameW(hAt, szCls, _countof(szCls) - 1);
-            DbgPrint("KUSH-DBG DoExitWindows: after dialog, tray enabled=%d btn enabled=%d wfp=%p cls=%S capture=%p fg=%p\n",
-                     bEnabled, bBtnEnabled, (PVOID)hAt, szCls, (PVOID)::GetCapture(), (PVOID)::GetForegroundWindow());
+            DbgPrint("KUSH-DBG DoExitWindows: tray en=%d btn en=%d vis=%d rc=(%ld,%ld,%ld,%ld) wfp=%p cls=%S\n",
+                     bEnabled, bBtnEnabled, bBtnVisible,
+                     rcBtn.left, rcBtn.top, rcBtn.right, rcBtn.bottom, (PVOID)hAt, szCls);
             if (!bEnabled)
                 ::EnableWindow(m_hWnd, TRUE);
             if (!bBtnEnabled)
                 ::EnableWindow(m_StartButton.m_hWnd, TRUE);
+            /* Kush Fluent fix: the fullscreen dim/shutdown dialog disturbs
+             * the appbar z-order and layout, leaving the Start button hidden
+             * or displaced so taskbar clicks land on the desktop (proven by
+             * the WindowFromPoint probe). Restore layout, visibility and the
+             * topmost band explicitly. */
+            if (!bBtnVisible)
+                m_StartButton.ShowWindow(SW_SHOW);
+            AlignControls(NULL);
+            ::SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, 0, 0,
+                           SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         }
 
         /*
