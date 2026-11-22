@@ -146,7 +146,37 @@ for p in (OUT/'textfiles/Light').glob('*.INI'):
   if part=='Button.Radiobutton':section=section.replace('ImageFile2 = Light\\RadioButton13.bmp','ImageFile2 = Light\\RadioButton16.bmp').replace('ImageFile3 = Light\\RadioButton13.bmp','ImageFile3 = Light\\RadioButton25.bmp')
   s=s[:start]+section+s[end:]
  p.write_text(s)
-(OUT/'KUSH-SOURCE.txt').write_text('KushFluent is derived from the Modern theme already shipped in this ReactOS/Kush source tree. Original GPLv3 LICENSE is preserved. Existing controls, glyphs and dark variant retain their original authorship. Light frame, button, tab, checkbox and radio bitmaps are original procedural drawings from tools/theme/gen_kushfluent.py. No Microsoft Windows bitmap, logo or font is included.\n')
+# Flat slider thumbs. Keep every source atlas size and five Win32 states.
+for p in B.glob('LIGHT_TRACKBAR*.bmp'):
+ w,h=Image.open(p).size;sh=h//5;scale=4;im=Image.new('RGBA',(w*scale,h*scale),(0,0,0,0));d=ImageDraw.Draw(im)
+ for state in range(5):
+  y=state*sh*scale;disabled=state==4;pressed=state==2;hot=state in (1,3)
+  edge=(209,215,223) if disabled else ((13,115,119) if hot or pressed else (157,170,181))
+  fill=(237,240,244) if disabled else ((8,88,94) if pressed else ((232,243,242) if hot else (255,255,255)))
+  ink=(177,186,196) if disabled else ((255,255,255) if pressed else (13,115,119))
+  pad=scale;radius=max(2,min(w,sh)//2-1)*scale
+  d.rounded_rectangle((pad,y+pad,(w-1)*scale-pad,y+(sh-1)*scale-pad),radius=radius,fill=fill,outline=edge,width=scale)
+  cx=(w-1)*scale//2;cy=y+(sh-1)*scale//2
+  if w<sh:box=(cx-scale,cy-3*scale,cx+scale,cy+3*scale)
+  else:box=(cx-3*scale,cy-scale,cx+3*scale,cy+scale)
+  d.rounded_rectangle(box,radius=scale,fill=ink)
+ small=im.resize((w,h),Image.Resampling.LANCZOS);im=Image.new('RGB',small.size,MAG);im.paste(small.convert('RGB'),mask=small.getchannel('A').point(lambda a:255 if a>=128 else 0));im.save(p)
+for name in ['LIGHT_SLIDERTRACK.bmp','LIGHT_SLIDERTRACKVERT.bmp']:
+ p=B/name;Image.new('RGB',Image.open(p).size,(190,203,213)).save(p)
+for p in (OUT/'textfiles/Light').glob('*.INI'):
+ s=p.read_text()
+ for part in ['TrackBar.Thumb','TrackBar.ThumbBottom','TrackBar.ThumbTop','TrackBar.ThumbLeft','TrackBar.ThumbRight','TrackBar.ThumbVert']:
+  token='['+part+']';start=s.lower().find(token.lower());end=s.find('\n[',start+1);end=len(s) if end<0 else end
+  section=s[start:end].rstrip()+'\n'
+  if not re.search(r'(?im)^Transparent\s*=\s*True\s*$',section):section+='Transparent = True\n'
+  if not re.search(r'(?im)^TransparentColor\s*=',section):section+='TransparentColor = 255 0 255\n'
+  s=s[:start]+section+s[end:]
+ # A zero-width source center (3+3 margins on a 6px track) only draws end caps.
+ for part in ['TrackBar.Track','TrackBar.TrackVert']:
+  start=s.lower().find(('['+part+']').lower());end=s.find('\n[',start+1);end=len(s) if end<0 else end
+  section=re.sub(r'(?im)^SizingMargins\s*=.*$', 'SizingMargins = 2, 2, 2, 2',s[start:end]);s=s[:start]+section+s[end:]
+ p.write_text(s)
+(OUT/'KUSH-SOURCE.txt').write_text('KushFluent is derived from the Modern theme already shipped in this ReactOS/Kush source tree. Original GPLv3 LICENSE is preserved. Existing controls, glyphs and dark variant retain their original authorship. Light frame, button, tab, checkbox, radio and slider bitmaps are original procedural drawings from tools/theme/gen_kushfluent.py. No Microsoft Windows bitmap, logo or font is included.\n')
 for p in (OUT/'lang').glob('*.rc'):
  s=p.read_text().replace('\"Modern\"','\"Kush Fluent\"');p.write_text(s)
 print(OUT)
