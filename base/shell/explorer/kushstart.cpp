@@ -922,20 +922,20 @@ KushPaint(KS_STATE *p, HDC hdc)
 
     /* search box */
     KushRoundRect(hdcMem, &p->rcSearch, 4, RGB(0xFF, 0xFF, 0xFF), kcBorder);
-    /* search magnifier: Fluent UI System Icon (MIT) */
+    /* search magnifier: drawn as a GDI vector glyph (lens + handle) instead of
+     * an ICO - ReactOS DrawIconEx mangles 32bpp-alpha icons. Fluent gray. */
     {
         int cy0 = p->rcSearch.top + (p->rcSearch.bottom - p->rcSearch.top) / 2;
-        HICON hIco = (HICON)LoadImageW(hExplorerInstance, MAKEINTRESOURCEW(IDI_KUSH_SEARCH),
-                                       IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-        if (hIco)
-        {
-            DrawIconEx(hdcMem, p->rcSearch.left + 4, cy0 - 8, hIco, 16, 16, 0, NULL, DI_NORMAL);
-            DestroyIcon(hIco);
-        }
-        else
-        {
-            DbgPrint("KUSH-DBG search magnifier icon load FAILED err=%lu\n", GetLastError());
-        }
+        int ix = p->rcSearch.left + 4, iy = cy0 - 8;
+        HPEN hPen = CreatePen(PS_SOLID, 2, RGB(0x60, 0x60, 0x60));
+        HPEN hOldPen = (HPEN)SelectObject(hdcMem, hPen);
+        HBRUSH hOldBrush = (HBRUSH)SelectObject(hdcMem, GetStockObject(NULL_BRUSH));
+        Ellipse(hdcMem, ix + 1, iy + 1, ix + 11, iy + 11);
+        MoveToEx(hdcMem, ix + 10, iy + 10, NULL);
+        LineTo(hdcMem, ix + 14, iy + 14);
+        SelectObject(hdcMem, hOldBrush);
+        SelectObject(hdcMem, hOldPen);
+        DeleteObject(hPen);
     }
 
     /* section header */
@@ -1133,11 +1133,6 @@ KushEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     if (uMsg == WM_CHAR && wParam == VK_ESCAPE)
         return 0;
-    if (uMsg == WM_CHAR)
-        DbgPrint("KUSH-DBG edit WM_CHAR wp=%u tick=%lu\n", (UINT)wParam, GetTickCount());
-    if (uMsg == EM_REPLACESEL || uMsg == WM_PASTE || uMsg == WM_SETTEXT ||
-        uMsg == WM_SYSCHAR || uMsg == WM_IME_CHAR || uMsg == WM_DEADCHAR)
-        DbgPrint("KUSH-DBG edit msg=0x%x wp=%u tick=%lu\n", uMsg, (UINT)wParam, GetTickCount());
     if (uMsg == WM_GETDLGCODE)
         return DLGC_WANTALLKEYS;
     return CallWindowProcW(g_ks.pfnOldEdit, hwnd, uMsg, wParam, lParam);
@@ -1201,7 +1196,6 @@ KushStartProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             WCHAR szText[128];
             GetWindowTextW(p->hwndEdit, szText, _countof(szText));
-            DbgPrint("KUSH-DBG EN_CHANGE text='%ls' tick=%lu\n", szText, GetTickCount());
             KushApplyFilter(p, szText);
             p->iSel = -1;
             p->iHot = -1;
@@ -1280,7 +1274,6 @@ KushStartProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CHAR:
         /* typing while the grid has focus goes to the search box */
-        DbgPrint("KUSH-DBG menu WM_CHAR wp=%u tick=%lu\n", (UINT)wParam, GetTickCount());
         if (p->hwndEdit && wParam >= 32)
         {
             SetFocus(p->hwndEdit);
