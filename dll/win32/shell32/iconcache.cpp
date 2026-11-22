@@ -28,7 +28,7 @@ static INT KushClassicFileIconIndex(LPCWSTR path, INT index)
     static LPCWSTR names[] = {L"console.cpl", L"access.cpl", L"hotplug.dll", L"input.dll",
         L"mmsys.cpl", L"powercfg.cpl", L"wined3dcfg.cpl", L"sysdm.cpl", L"openglcfg.cpl",
         L"appwiz.cpl", L"desk.cpl", L"inetcpl.cpl", L"timedate.cpl", L"joy.cpl",
-        L"telephon.cpl", L"hdwwiz.cpl", L"main.cpl", L"intl.cpl", L"usrmgr.cpl", L"shell32.dll", L"ntobjshex.dll"};
+        L"telephon.cpl", L"hdwwiz.cpl", L"main.cpl", L"intl.cpl", L"usrmgr.cpl", L"shell32.dll", L"ntobjshex.dll", L"netshell.dll"};
     WCHAR expanded[MAX_PATH], resolved[MAX_PATH];
     DWORD count = ExpandEnvironmentStringsW(path, expanded, _countof(expanded));
     if (!count || count > _countof(expanded)) return index;

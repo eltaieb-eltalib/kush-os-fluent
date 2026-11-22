@@ -24,6 +24,22 @@ Build (Linux, mingw-w64 **posix** toolchain, cmake, ninja, bison, flex, libgmp-d
 
 ## تصميم Fluent (شغل جاري — WIP)
 
+### تحديث 22 نوفمبر: Printers وNetwork Connections الفعليان
+
+الصور السابقة كشفت أن تغيير موارد متشابهة الاسم لا يكفي: Printers مسجل على مورد shell32 رقم138، وNetwork Connections يستخدم netshell.dll نفسه. اتصلح ربط المسارين الفعليين مع الإبقاء على الصور والأرقام الأصلية، ومراعاة `ClassicIcons` عند فتح نافذة جديدة. صورة المجلد/لوحة الشبكة فقط اتغيرت؛ صور حالة الشبكة النشطة والخاملة والمفصولة والاستقبال والإرسال لم تُدمج أو تُستبدل في الدفعة دي.
+
+صور QEMU أدناه تثبت الشكل الحديث، والرجوع إلى الصور الأصلية بالقيمة1، ثم إعادة التفعيل بالقيمة0. فُتحت Explorer وNotepad وcmd وControl Panel، وسجل هذه الدورة بلا `KUSH-EXC`. النسخة الجديدة محفوظة خصوصيا ونُزلت وطابقت SHA256 قبل الإقلاع. الجرد وصل23موردا في `shell-map.json`، لا23ظهورا تم اختباره.
+
+أضيف مورد CD من Fluent أيضا، لكن أيقونة ReactOS(X) بقيت قديمة في الصورة. تتبّع المصدر كشف أن صورة autorun الخاصة بوسيط الإقلاع تتقدم على مورد القرص العام. هذا الجزء لم يُصلح بعد، ولا يبرر تحويل صور الأقراص العشوائية أو تغيير سلوك تشغيلها. ما زالت هناك أيقونات وأجزاء داخلية قديمة وأسماء تبويبات مقطوعة، والعمل مستمر.
+
+![Control Panel: Network Connections الحديث بعد إعادة التفعيل](docs/design/2026-11-22-shell-icons2-modern-top.png)
+
+![Control Panel: Printers الحديث بعد إعادة التفعيل](docs/design/2026-11-22-shell-icons2-modern-bottom.png)
+
+![Network Connections وبقية القائمة عند الرجوع](docs/design/2026-11-22-shell-icons2-classic-top.png)
+
+![Printers وبقية القائمة عند الرجوع](docs/design/2026-11-22-shell-icons2-classic-bottom.png)
+
 ### تحديث 22 نوفمبر: بقايا Explorer وفضاءات الأسماء
 
 أضيفت20موردا من Fluent الرسمي إلى مسارات عرض مختارة:12موردا في shell32 و8في امتداد NT Object Namespace وSystem Registry. الأصل وأرقامه باقية، والنسخ الجديدة عند الرقم الأصلي +40000. المجموعة تشمل موارد Floppy وFolder Options وPrinters وTaskbar وموارد أخرى، لكن العدد جرد مصدر وليس ضمانا لظهور كل مورد في صورة الاختبار.

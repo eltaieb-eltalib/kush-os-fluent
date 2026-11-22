@@ -1,6 +1,26 @@
 [
   {
     "module": "shell32",
+    "resource": "IDI_SHELL_CDROM",
+    "original": "res/icons/kush/sh-disc.ico",
+    "fluent": "cd",
+    "svg": [
+      "cd_16_filled.svg"
+    ],
+    "fluent_offset": 40000
+  },
+  {
+    "module": "shell32",
+    "resource": "IDI_SHELL_PRINTER2",
+    "original": "res/icons/138.ico",
+    "fluent": "print",
+    "svg": [
+      "print_48_filled.svg"
+    ],
+    "fluent_offset": 40000
+  },
+  {
+    "module": "shell32",
     "resource": "IDI_SHELL_5_12_FLOPPY",
     "original": "res/icons/6.ico",
     "fluent": "save",
@@ -197,6 +217,16 @@
     "fluent": "document_text",
     "svg": [
       "document_text_48_color.svg"
+    ],
+    "fluent_offset": 40000
+  },
+  {
+    "module": "netshell",
+    "resource": "IDI_SHELL_NETWORK_FOLDER",
+    "original": "res/netshell.ico",
+    "fluent": "network_adapter",
+    "svg": [
+      "network_adapter_16_filled.svg"
     ],
     "fluent_offset": 40000
   }
