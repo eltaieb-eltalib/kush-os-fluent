@@ -104,7 +104,49 @@ p=B/'LIGHT_COMBOBUTTONGLYPH.bmp';w,h=Image.open(p).size;sh=h//4;im=Image.new('RG
 for state in range(4):
  cx=w//2;cy=state*sh+sh//2;d.line([(cx-2,cy-1),(cx,cy+1),(cx+2,cy-1)],fill=(47,58,69) if state!=3 else (167,176,187),width=1)
 im.save(p)
-(OUT/'KUSH-SOURCE.txt').write_text('KushFluent is derived from the Modern theme already shipped in this ReactOS/Kush source tree. Original GPLv3 LICENSE is preserved. Existing controls, glyphs and dark variant retain their original authorship. Light frame and push-button bitmaps are original procedural drawings from tools/theme/gen_kushfluent.py. No Microsoft Windows bitmap, logo or font is included.\n')
+# Flat tab surfaces and native checkbox/radio state atlases. Geometry and
+# Win32 state ordering stay unchanged; these are procedural presentation assets.
+for p in B.glob('LIGHT_TABITEM*.bmp'):
+ w,h=Image.open(p).size;sh=h//5;im=Image.new('RGB',(w,h),MAG)
+ for state in range(5):
+  tile=Image.new('RGB',(w,sh),MAG);d=ImageDraw.Draw(tile)
+  fill=(247,248,250) if state not in (1,2) else ((232,243,242) if state==1 else (255,255,255))
+  d.rounded_rectangle((0,0,w-1,sh+2),radius=3,fill=fill,outline=(216,222,230),width=1)
+  if state==2:d.rectangle((4,sh-2,w-5,sh-1),fill=(13,115,119))
+  im.paste(tile,(0,state*sh))
+ im.save(p)
+for name in ['LIGHT_TABBACKGROUND.bmp','LIGHT_TABBACKGROUND133.bmp']:
+ p=B/name;im=Image.open(p);Image.new('RGB',im.size,(247,248,250)).save(p)
+p=B/'LIGHT_TABPANEEDGE.bmp';w,h=Image.open(p).size;im=Image.new('RGB',(w,h),(255,255,255));d=ImageDraw.Draw(im);d.rectangle((0,0,w-1,h-1),outline=(214,220,228),width=1);im.save(p)
+for size in [13,16,25]:
+ for radio in [False,True]:
+  count=8 if radio else 12;scale=4;im=Image.new('RGBA',(size*scale,size*count*scale),(0,0,0,0));d=ImageDraw.Draw(im)
+  for state in range(count):
+   group=state//4;disabled=state%4==3;hot=state%4==1;pressed=state%4==2;y=state*size*scale
+   pad=1*scale;edge=(160,169,180) if disabled else ((13,115,119) if hot or pressed or group else (112,125,140))
+   fill=(241,243,246) if disabled else (((8,88,94) if pressed else ((10,135,139) if hot else (13,115,119))) if group else ((214,234,234) if pressed else ((232,243,242) if hot else (255,255,255))))
+   box=(pad,y+pad,(size-1)*scale-pad,y+(size-1)*scale-pad)
+   if radio:d.ellipse(box,fill=fill,outline=edge,width=scale)
+   else:d.rounded_rectangle(box,radius=2*scale,fill=fill,outline=edge,width=scale)
+   ink=(167,176,187) if disabled else (255,255,255)
+   if group==1:
+    if radio:
+     inset=4*scale;d.ellipse((inset,y+inset,(size-1)*scale-inset,y+(size-1)*scale-inset),fill=ink)
+    else:
+     d.line([(3*scale,y+size*scale//2),(5*scale,y+(size-4)*scale),((size-3)*scale,y+3*scale)],fill=ink,width=scale+scale//2)
+   elif group==2:d.line((3*scale,y+size*scale//2,(size-4)*scale,y+size*scale//2),fill=ink,width=scale+scale//2)
+  small=im.resize((size,size*count),Image.Resampling.LANCZOS);im=Image.new('RGB',small.size,MAG);im.paste(small.convert('RGB'),mask=small.getchannel('A').point(lambda a:255 if a>=128 else 0));im.save(B/(('LIGHT_RADIOBUTTON' if radio else 'LIGHT_CHECKBOX')+str(size)+'.bmp'))
+for p in (OUT/'textfiles/Light').glob('*.INI'):
+ s=p.read_text()
+ for part in ['Button.Checkbox','Button.Radiobutton']:
+  token='['+part+']';start=s.lower().find(token.lower());end=s.find('\n[',start+1);end=len(s) if end<0 else end
+  section=s[start:end].rstrip()+'\n'
+  if not re.search(r'(?im)^Transparent\s*=\s*True\s*$', section):section+='\nTransparent = True\n'
+  if not re.search(r'(?im)^TransparentColor\s*=', section):section+='TransparentColor = 255 0 255\n'
+  if part=='Button.Radiobutton':section=section.replace('ImageFile2 = Light\\RadioButton13.bmp','ImageFile2 = Light\\RadioButton16.bmp').replace('ImageFile3 = Light\\RadioButton13.bmp','ImageFile3 = Light\\RadioButton25.bmp')
+  s=s[:start]+section+s[end:]
+ p.write_text(s)
+(OUT/'KUSH-SOURCE.txt').write_text('KushFluent is derived from the Modern theme already shipped in this ReactOS/Kush source tree. Original GPLv3 LICENSE is preserved. Existing controls, glyphs and dark variant retain their original authorship. Light frame, button, tab, checkbox and radio bitmaps are original procedural drawings from tools/theme/gen_kushfluent.py. No Microsoft Windows bitmap, logo or font is included.\n')
 for p in (OUT/'lang').glob('*.rc'):
  s=p.read_text().replace('\"Modern\"','\"Kush Fluent\"');p.write_text(s)
 print(OUT)
