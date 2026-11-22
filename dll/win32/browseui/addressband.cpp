@@ -92,6 +92,8 @@ HRESULT STDMETHODCALLTYPE CAddressBand::GetBandInfo(DWORD dwBandID, DWORD dwView
             pdbi->ptMinSize.x = 100;
         else
             pdbi->ptMinSize.x = 150;
+        if (m_modernExplorer)
+            pdbi->ptMinSize.x = KushExplorerPixels(m_hWnd, 220);
         pdbi->ptMinSize.y = m_modernExplorer ? KushExplorerPixels(m_hWnd, 36) : 22;
     }
     if (pdbi->dwMask & DBIM_MAXSIZE)
@@ -110,6 +112,8 @@ HRESULT STDMETHODCALLTYPE CAddressBand::GetBandInfo(DWORD dwBandID, DWORD dwView
             pdbi->ptActual.x = 100;
         else
             pdbi->ptActual.x = 150;
+        if (m_modernExplorer)
+            pdbi->ptActual.x = KushExplorerPixels(m_hWnd, 220);
         pdbi->ptActual.y = m_modernExplorer ? KushExplorerPixels(m_hWnd, 36) : 22;
     }
     if (pdbi->dwMask & DBIM_TITLE)
