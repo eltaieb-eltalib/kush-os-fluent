@@ -23,6 +23,7 @@ Implements the toolbar band of a cabinet window
 */
 
 #include "precomp.h"
+#include <kushexplorer.h>
 #define KUSH_ICONS_NO_LOAD_MACROS
 #include <kushicons.h>
 
@@ -302,6 +303,11 @@ HRESULT STDMETHODCALLTYPE CToolsBand::SetSite(IUnknown* pUnkSite){
     SendMessage(TB_SETIMAGELIST, 0, (LPARAM) m_himlNormal);
     SendMessage(TB_SETHOTIMAGELIST, 0, (LPARAM) m_himlHot);
     SendMessage(TB_ADDBUTTONSW, numShownButtons, (LPARAM)&tbButtonsAdd);
+    if (KushModernExplorer())
+    {
+        DWORD size = SendMessage(TB_GETBUTTONSIZE, 0, 0);
+        SendMessage(TB_SETBUTTONSIZE, 0, MAKELPARAM(LOWORD(size), KushExplorerPixels(m_hWnd, 38)));
+    }
 
     return hResult;
 }
