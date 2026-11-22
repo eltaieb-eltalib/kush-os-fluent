@@ -367,8 +367,44 @@ public:
         return 0;
     }
 
+    /* Kush Fluent (phase 7): bypass the themed/classic paint entirely -
+     * ReactOS keeps painting its themed Start frame regardless of
+     * SetWindowTheme, so we paint the tile ourselves in WM_PAINT. */
+    LRESULT OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        if (KushTaskbar_IsClassicRequested())
+        {
+            bHandled = FALSE;
+            return 0;
+        }
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(&ps);
+        RECT rc;
+        GetClientRect(&rc);
+        DRAWITEMSTRUCT dis;
+        ZeroMemory(&dis, sizeof(dis));
+        dis.hDC = hdc;
+        dis.rcItem = rc;
+        dis.itemState = (SendMessage(BM_GETSTATE, 0, 0) & BST_PUSHED) ? ODS_SELECTED : 0;
+        DrawItem(&dis);
+        EndPaint(&ps);
+        return 0;
+    }
+
+    LRESULT OnEraseBkgnd(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        if (KushTaskbar_IsClassicRequested())
+        {
+            bHandled = FALSE;
+            return 0;
+        }
+        return 1;
+    }
+
     BEGIN_MSG_MAP(CStartButton)
         MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLButtonDown)
+        MESSAGE_HANDLER(WM_PAINT, OnPaint)
+        MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
     END_MSG_MAP()
 };
 
