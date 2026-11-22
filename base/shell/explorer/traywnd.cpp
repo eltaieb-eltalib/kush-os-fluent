@@ -291,7 +291,6 @@ public:
         if (KushTaskbar_IsClassicRequested())
         {
             SetWindowTheme(m_hWnd, L"Start", NULL);
-        {
             m_ImageList = ImageList_LoadImageW(hExplorerInstance,
                                                MAKEINTRESOURCEW(IDB_START),
                                                0, 0, 0,
