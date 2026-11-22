@@ -518,6 +518,17 @@ public:
         /* Display the ReactOS Shutdown Dialog */
         ExitWindowsDialog(m_hWnd);
 
+        /* Kush Fluent fix: cancelling the shutdown dialog could leave the
+         * tray window disabled (the msgina dim window owns the dialog), which
+         * killed all taskbar mouse input while keyboard Start still worked.
+         * Re-enable defensively and log what state we found. */
+        {
+            BOOL bEnabled = ::IsWindowEnabled(m_hWnd);
+            DbgPrint("KUSH-DBG DoExitWindows: after dialog, tray enabled=%d\n", bEnabled);
+            if (!bEnabled)
+                ::EnableWindow(m_hWnd, TRUE);
+        }
+
         /*
          * If the user presses CTRL+ALT+SHIFT while exiting
          * the shutdown dialog, exit the shell cleanly.
