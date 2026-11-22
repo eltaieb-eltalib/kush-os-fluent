@@ -1370,11 +1370,11 @@ public:
         LONG NewBtnSize;
         BOOL Horizontal;
 
-        /* Compact cells use the application's 24px icon, with no title painted.
+        /* Compact cells use the application's 32px icon, with no title painted.
          * Keep the toolbar text intact for tooltips and accessibility. */
         BOOL Compact = m_Tray->IsHorizontal() && KushTaskbar_UseCompactTasks();
-        int cxWanted = Compact ? 24 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CXSMICON : SM_CXICON);
-        int cyWanted = Compact ? 24 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CYSMICON : SM_CYICON);
+        int cxWanted = Compact ? 32 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CXSMICON : SM_CXICON);
+        int cyWanted = Compact ? 32 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CYSMICON : SM_CYICON);
         /* Update the size of the image list if needed */
         int cx, cy;
         ImageList_GetIconSize(m_ImageList, &cx, &cy);
@@ -1436,7 +1436,7 @@ public:
                 uiMin = GetSystemMetrics(SM_CXSIZE) + (2 * GetSystemMetrics(SM_CXEDGE));
                 if (Horizontal)
                 {
-                    uiMax = Compact ? 48 : GetSystemMetrics(SM_CXMINIMIZED);
+                    uiMax = Compact ? 56 : GetSystemMetrics(SM_CXMINIMIZED);
                     if (Compact)
                         uiMin = 32;
 
@@ -1551,11 +1551,11 @@ public:
         BOOL Compact = m_Tray->IsHorizontal() && KushTaskbar_UseCompactTasks();
         if (Compact)
         {
-            m_TaskBar.SetButtonSize(48, 40);
+            m_TaskBar.SetButtonSize(56, 40);
             m_ButtonSize.cy = 40;
         }
-        m_ImageList = ImageList_Create(Compact ? 24 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CXSMICON : SM_CXICON),
-                                       Compact ? 24 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CYSMICON : SM_CYICON),
+        m_ImageList = ImageList_Create(Compact ? 32 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CXSMICON : SM_CXICON),
+                                       Compact ? 32 : GetSystemMetrics(g_TaskbarSettings.bSmallIcons ? SM_CYSMICON : SM_CYICON),
                                        ILC_COLOR32 | ILC_MASK, 0, 1000);
         m_TaskBar.SetImageList(m_ImageList);
 
@@ -1901,7 +1901,7 @@ public:
                 SelectObject(dc, oldBrush);
                 DeleteObject(fill);
             }
-            int cx = 24, cy = 24;
+            int cx = 32, cy = 32;
             ImageList_GetIconSize(m_ImageList, &cx, &cy);
             ImageList_Draw(m_ImageList, TaskItem->IconIndex, dc,
                 (cell.left + cell.right - cx) / 2,

@@ -9,6 +9,7 @@ list(APPEND SOURCE
     desktop.cpp
     explorer.cpp
     kushstart.cpp
+    kushtypography.cpp
     mediabtns.cpp
     notifyiconscust.cpp
     rshell.cpp

@@ -1974,7 +1974,7 @@ ChangePos:
              * centered group width uses each button's maximum width */
             int nButtons = (int)SendMessageW(hwndTaskToolbar, TB_BUTTONCOUNT, 0, 0);
             LONG lTasksW = nButtons *
-                ((KushTaskbar_UseCompactTasks() ? 48 : GetSystemMetrics(SM_CXMINIMIZED)) + 4);
+                ((KushTaskbar_UseCompactTasks() ? 56 : GetSystemMetrics(SM_CXMINIMIZED)) + 4);
             LONG lGroupW = StartSize.cx + GetSystemMetrics(SM_CXSIZEFRAME) + lTasksW;
             /* Center over the FULL taskbar width (Windows-11-like); fall
              * back to the classic left layout when the group would reach
