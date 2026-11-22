@@ -649,6 +649,7 @@ KushLoadItems(KS_STATE *p)
     {
         static const struct { LPCWSTR szExe; int idIcon; } known[] =
         {
+            { L"\\explorer.exe", IDI_KUSH_EXPLORER },
             { L"\\cmd.exe",     IDI_KUSH_CMD },
             { L"\\notepad.exe", IDI_KUSH_NOTEPAD },
             { L"\\wordpad.exe", IDI_KUSH_WORDPAD },

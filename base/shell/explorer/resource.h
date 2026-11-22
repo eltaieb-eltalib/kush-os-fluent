@@ -42,6 +42,7 @@
 #define IDI_KUSH_PAINT                      606
 #define IDI_KUSH_CALC                       607
 #define IDI_KUSH_FILES                      608
+#define IDI_KUSH_EXPLORER                   609
 #define IDB_TASKBARPROP_AUTOHIDE            145
 #define IDB_TASKBARPROP_LOCK_GROUP_QL       146
 #define IDB_TASKBARPROP_NOLOCK_GROUP_QL     147
