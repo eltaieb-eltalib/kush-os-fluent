@@ -7,6 +7,7 @@
  */
 
 #include "precomp.h"
+#include "kushstart.h"
 #include <commoncontrols.h>
 #include <cfgmgr32.h>
 #include <regstr.h>
@@ -221,6 +222,19 @@ public:
 
         Size.cy = max(Size.cy, GetSystemMetrics(SM_CYCAPTION));
 
+        /* Kush Fluent (phase 7): icon-only button on the 48px bar. The
+         * themed ideal size collapses to nearly zero with an empty
+         * caption, so size it from the start icon itself. */
+        if (!KushTaskbar_IsClassicRequested() && m_ImageList != NULL)
+        {
+            int cxIcon = 0, cyIcon = 0;
+            ImageList_GetIconSize(m_ImageList, &cxIcon, &cyIcon);
+            if (cxIcon > 0)
+                Size.cx = cxIcon + 20;
+            if (cyIcon > 0)
+                Size.cy = max(Size.cy, cyIcon + 12);
+        }
+
         /* Save the size of the start button */
         m_Size = Size;
     }
@@ -250,8 +264,10 @@ public:
 
         SetWindowTheme(m_hWnd, L"Start", NULL);
 
+        /* Kush Fluent (phase 7): the icon-only centered Start uses the Kush
+         * mark bitmap; the classic taskbar keeps the original resource. */
         m_ImageList = ImageList_LoadImageW(hExplorerInstance,
-                                           MAKEINTRESOURCEW(IDB_START),
+                                           MAKEINTRESOURCEW(KushTaskbar_IsClassicRequested() ? IDB_START : IDB_START_KUSH),
                                            0, 0, 0,
                                            IMAGE_BITMAP,
                                            LR_LOADTRANSPARENT | LR_CREATEDIBSECTION);
@@ -271,6 +287,10 @@ public:
         {
             wcscpy(szStartCaption, L"Start");
         }
+
+        /* Kush Fluent (phase 7): icon-only Start button unless classic. */
+        if (!KushTaskbar_IsClassicRequested())
+            szStartCaption[0] = L'\0';
 
         DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | BS_PUSHBUTTON | BS_LEFT | BS_VCENTER;
 
@@ -745,6 +765,7 @@ public:
 
     VOID HideStartMenu()
     {
+        KushStart_Hide();
         m_StartMenuPopup->OnSelect(MPOS_CANCELLEVEL);
     }
 
@@ -1532,6 +1553,20 @@ GetPrimaryScreenRect:
             }
 
 ChangePos:
+            /* Kush Fluent (phase 7): enforce the 48px minimum height for
+             * horizontal taskbars here, after every other sizing path has
+             * run (registry load, rebar fit, appbar negotiation). */
+            if (!KushTaskbar_IsClassicRequested() &&
+                (m_Position == ABE_BOTTOM || m_Position == ABE_TOP))
+            {
+                if (rcTray.bottom - rcTray.top < 48)
+                {
+                    if (m_Position == ABE_BOTTOM)
+                        rcTray.top = rcTray.bottom - 48;
+                    else
+                        rcTray.bottom = rcTray.top + 48;
+                }
+            }
             m_TraySize.cx = rcTray.right - rcTray.left;
             m_TraySize.cy = rcTray.bottom - rcTray.top;
 
@@ -1712,6 +1747,14 @@ ChangePos:
         if (WndSize.cy < g_TaskbarSettings.sr.Size.cy)
             WndSize.cy = g_TaskbarSettings.sr.Size.cy;
 
+        /* Kush Fluent (phase 7): 48px taskbar on horizontal edges. */
+        if (!KushTaskbar_IsClassicRequested() &&
+            (m_Position == ABE_BOTTOM || m_Position == ABE_TOP))
+        {
+            if (WndSize.cy < 48)
+                WndSize.cy = 48;
+        }
+
         /* Save the calculated size */
         m_TraySize = WndSize;
 
@@ -1779,12 +1822,41 @@ ChangePos:
             StartSize.cy = HIWORD(size) + (m_Theme ? GetSystemMetrics(SM_CYEDGE) : 0);
         }
 
+        /* Kush Fluent (phase 7): center the Start button + task buttons as
+         * one group (Windows-11-like, original implementation). Needs the
+         * tray-notify width early; disabled with ClassicTaskbar=1. */
+        LONG xStart = 0;
+        LONG idealRebarW = -1; /* <0 keeps the classic left-aligned layout */
+        if (Horizontal && !KushTaskbar_IsClassicRequested() && hwndTaskToolbar &&
+            m_TrayNotify != NULL)
+        {
+            SIZE szNotify = { 0, rcClient.bottom };
+            LONG lNotifyW = 0;
+            if (SendMessage(m_TrayNotify, TNWM_GETMINIMUMSIZE, (WPARAM)Horizontal, (LPARAM)&szNotify))
+                lNotifyW = szNotify.cx;
+            /* task buttons expand to fill their band (taskswnd.cpp), so the
+             * centered group width uses each button's maximum width */
+            int nButtons = (int)SendMessageW(hwndTaskToolbar, TB_BUTTONCOUNT, 0, 0);
+            LONG lTasksW = nButtons * (GetSystemMetrics(SM_CXMINIMIZED) + 4);
+            LONG lGroupW = StartSize.cx + GetSystemMetrics(SM_CXSIZEFRAME) + lTasksW;
+            /* Center over the FULL taskbar width (Windows-11-like); fall
+             * back to the classic left layout when the group would reach
+             * the tray notification area. */
+            if (lGroupW < rcClient.right - lNotifyW)
+            {
+                xStart = (rcClient.right - lGroupW) / 2;
+                if (xStart < 0)
+                    xStart = 0;
+                idealRebarW = lTasksW;
+            }
+        }
+
         if (m_StartButton.m_hWnd != NULL)
         {
             /* Resize and reposition the button */
             dwp = m_StartButton.DeferWindowPos(dwp,
                                                NULL,
-                                               0,
+                                               xStart,
                                                0,
                                                StartSize.cx,
                                                StartSize.cy,
@@ -1845,8 +1917,8 @@ ChangePos:
 
             if (Horizontal)
             {
-                ptRebar.x = StartSize.cx + GetSystemMetrics(SM_CXSIZEFRAME);
-                szRebar.cx = ptTrayNotify.x - ptRebar.x;
+                ptRebar.x = xStart + StartSize.cx + GetSystemMetrics(SM_CXSIZEFRAME);
+                szRebar.cx = (idealRebarW >= 0) ? idealRebarW : (ptTrayNotify.x - ptRebar.x);
                 szRebar.cy = rcClient.bottom;
             }
             else
@@ -1919,6 +1991,22 @@ ChangePos:
     }
 
     void PopupStartMenu()
+    {
+        /* Kush Fluent: the new centered Start handles the request unless the
+         * user asked for the classic menu (HKCU\\Software\\Kush\\Shell
+         * ClassicStartMenu=1). Falls back to the classic menu on failure. */
+        if (!KushStart_IsClassicRequested())
+        {
+            if (KushStart_Toggle(m_hWnd))
+            {
+                m_StartButton.SendMessageW(BM_SETSTATE, KushStart_IsOpen() ? TRUE : FALSE, 0);
+                return;
+            }
+        }
+        PopupClassicStartMenu();
+    }
+
+    void PopupClassicStartMenu()
     {
         if (m_StartMenuPopup != NULL)
         {
@@ -2581,6 +2669,32 @@ ChangePos:
     {
         HDC hdc = (HDC) wParam;
 
+        /* Kush Fluent (phase 7): light taskbar. Static Acrylic blur lands
+         * with phase 5a; this is the flat light base. */
+        if (!KushTaskbar_IsClassicRequested())
+        {
+            RECT rc;
+            GetClientRect(&rc);
+            HBRUSH hB = CreateSolidBrush(RGB(0xF3, 0xF3, 0xF3));
+            FillRect(hdc, &rc, hB);
+            DeleteObject(hB);
+            HPEN hP = CreatePen(PS_SOLID, 1, RGB(0xD4, 0xD4, 0xD4));
+            HPEN hOldP = (HPEN)SelectObject(hdc, hP);
+            if (m_Position == ABE_BOTTOM)
+            {
+                MoveToEx(hdc, rc.left, rc.top, NULL);
+                LineTo(hdc, rc.right, rc.top);
+            }
+            else if (m_Position == ABE_TOP)
+            {
+                MoveToEx(hdc, rc.left, rc.bottom - 1, NULL);
+                LineTo(hdc, rc.right, rc.bottom - 1);
+            }
+            SelectObject(hdc, hOldP);
+            DeleteObject(hP);
+            return 0;
+        }
+
         if (!m_Theme)
         {
             bHandled = FALSE;
@@ -3110,6 +3224,13 @@ HandleTrayContextMenu:
     LRESULT OnOpenStartMenu(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
         HWND hwndStartMenu;
+
+        if (KushStart_IsOpen())
+        {
+            HideStartMenu();
+            return TRUE;
+        }
+
         HRESULT hr = IUnknown_GetWindow(m_StartMenuPopup, &hwndStartMenu);
         if (FAILED_UNEXPECTEDLY(hr))
             return FALSE;
@@ -3119,6 +3240,27 @@ HandleTrayContextMenu:
         else
             PopupStartMenu();
 
+        return TRUE;
+    }
+
+    LRESULT OnOpenClassicStartMenu(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        /* "All apps" in the Kush Fluent Start opens the classic menu. */
+        PopupClassicStartMenu();
+        return TRUE;
+    }
+
+    LRESULT OnKushStartClosed(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        m_StartButton.SendMessageW(BM_SETSTATE, FALSE, 0);
+        return TRUE;
+    }
+
+    LRESULT OnKushRealign(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        /* Kush Fluent (phase 7): the task band asks for a realign when its
+         * button count changes so the centered group tracks the buttons. */
+        AlignControls(NULL);
         return TRUE;
     }
 
@@ -3537,6 +3679,9 @@ HandleTrayContextMenu:
         MESSAGE_HANDLER(m_WinMMDevChgMsg, OnWinMMDeviceChange)
         MESSAGE_HANDLER(TWM_SETTINGSCHANGED, OnTaskbarSettingsChanged)
         MESSAGE_HANDLER(TWM_OPENSTARTMENU, OnOpenStartMenu)
+        MESSAGE_HANDLER(TWM_OPENCLASSICSTARTMENU, OnOpenClassicStartMenu)
+        MESSAGE_HANDLER(TWM_KUSHSTARTCLOSED, OnKushStartClosed)
+        MESSAGE_HANDLER(TWM_KUSHREALIGN, OnKushRealign)
         MESSAGE_HANDLER(TWM_DOEXITWINDOWS, OnDoExitWindows)
         MESSAGE_HANDLER(TWM_GETTASKSWITCH, OnGetTaskSwitch)
         MESSAGE_HANDLER(TWM_SETZORDER, OnSetZOrder)

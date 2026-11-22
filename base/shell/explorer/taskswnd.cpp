@@ -7,6 +7,7 @@
  */
 
 #include "precomp.h"
+#include "kushstart.h"
 #include "mediabtns.h"
 #include <commoncontrols.h>
 #include <regstr.h>
@@ -826,6 +827,10 @@ public:
 
             /* Update button sizes and fix the button wrapping */
             UpdateButtonsSize(TRUE);
+            /* Kush Fluent (phase 7): the centered task group's width comes
+             * from the button count, so the tray must realign as it grows. */
+            if (!KushTaskbar_IsClassicRequested())
+                PostMessageW(m_Tray->GetHWND(), TWM_KUSHREALIGN, 0, 0);
             return iIndex;
         }
 
@@ -859,6 +864,9 @@ public:
 
                     /* Update button sizes and fix the button wrapping */
                     UpdateButtonsSize(TRUE);
+                    /* Kush Fluent (phase 7): realign the centered task group. */
+                    if (!KushTaskbar_IsClassicRequested())
+                        PostMessageW(m_Tray->GetHWND(), TWM_KUSHREALIGN, 0, 0);
                     return TRUE;
                 }
 
@@ -1900,7 +1908,25 @@ public:
             {
 
             case CDDS_ITEMPREPAINT:
-                Ret = HandleItemPaint(nmtbcd);
+                Ret = HandleItemPaint(nmtbcd) | CDRF_NOTIFYPOSTPAINT;
+                break;
+
+            case CDDS_ITEMPOSTPAINT:
+                /* Kush Fluent (phase 7): accent indicator under the active
+                 * task button (Kush teal, original). */
+                if (!KushTaskbar_IsClassicRequested() &&
+                    (nmtbcd->nmcd.uItemState & CDIS_CHECKED))
+                {
+                    RECT rcBtn = nmtbcd->nmcd.rc;
+                    int iBarW = min(24, (rcBtn.right - rcBtn.left) / 2);
+                    int iCx = (rcBtn.left + rcBtn.right) / 2;
+                    RECT rcBar = { iCx - iBarW / 2, rcBtn.bottom - 4,
+                                   iCx + (iBarW + 1) / 2, rcBtn.bottom - 1 };
+                    HBRUSH hBar = CreateSolidBrush(RGB(0x0D, 0x73, 0x77));
+                    FillRect(nmtbcd->nmcd.hdc, &rcBar, hBar);
+                    DeleteObject(hBar);
+                }
+                Ret = CDRF_DODEFAULT;
                 break;
 
             case CDDS_PREPAINT:
