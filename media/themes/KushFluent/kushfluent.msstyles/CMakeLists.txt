@@ -19,7 +19,7 @@ foreach(_file ${TEXTFILES})
     list(APPEND _converted_files ${_converted_file})
 endforeach()
 
-set_source_files_properties(kushfluent.rc PROPERTIES OBJECT_DEPENDS "${_converted_files}")
+set_property(SOURCE kushfluent.rc APPEND PROPERTY OBJECT_DEPENDS "${_converted_files}")
 add_library(kushfluent.msstyles MODULE kushfluent.rc)
 set_module_type(kushfluent.msstyles module)
 add_dependencies(kushfluent.msstyles xdk)

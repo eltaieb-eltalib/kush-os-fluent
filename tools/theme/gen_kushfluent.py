@@ -9,6 +9,8 @@ OUT=ROOT/'media/themes/KushFluent/kushfluent.msstyles'
 if not OUT.exists(): shutil.copytree(BASE,OUT)
 (OUT.parent/'CMakeLists.txt').write_text('add_subdirectory(kushfluent.msstyles)\n')
 p=OUT/'CMakeLists.txt';s=(BASE/'CMakeLists.txt').read_text().replace('modern','kushfluent').replace('${CMAKE_CURRENT_BINARY_DIR}/bitmaps/*', '${CMAKE_CURRENT_SOURCE_DIR}/bitmaps/*').replace('${CMAKE_CURRENT_BINARY_DIR}/lang/*', '${CMAKE_CURRENT_SOURCE_DIR}/lang/*').replace('${CMAKE_CURRENT_BINARY_DIR}/textfiles/*', '${CMAKE_CURRENT_SOURCE_DIR}/textfiles/*');p.write_text(s)
+# Keep bitmap dependencies when adding converted INI dependencies.
+cmake=OUT/'CMakeLists.txt';text=cmake.read_text();text=text.replace('set_source_files_properties(kushfluent.rc PROPERTIES OBJECT_DEPENDS', 'set_property(SOURCE kushfluent.rc APPEND PROPERTY OBJECT_DEPENDS');cmake.write_text(text)
 p=OUT/'kushfluent.rc';s=(BASE/'modern.rc').read_text().replace('Modern Theme','Kush Fluent Theme').replace('"Modern\\0"','"KushFluent\\0"').replace('modern.msstyles','kushfluent.msstyles');p.write_text(s)
 (OUT/'modern.rc').unlink(missing_ok=True)
 for p in (OUT/'textfiles/Light').glob('*.INI'):
@@ -176,7 +178,20 @@ for p in (OUT/'textfiles/Light').glob('*.INI'):
   start=s.lower().find(('['+part+']').lower());end=s.find('\n[',start+1);end=len(s) if end<0 else end
   section=re.sub(r'(?im)^SizingMargins\s*=.*$', 'SizingMargins = 2, 2, 2, 2',s[start:end]);s=s[:start]+section+s[end:]
  p.write_text(s)
-(OUT/'KUSH-SOURCE.txt').write_text('KushFluent is derived from the Modern theme already shipped in this ReactOS/Kush source tree. Original GPLv3 LICENSE is preserved. Existing controls, glyphs and dark variant retain their original authorship. Light frame, button, tab, checkbox, radio and slider bitmaps are original procedural drawings from tools/theme/gen_kushfluent.py. No Microsoft Windows bitmap, logo or font is included.\n')
+# Flat native up/down buttons and four-state chevrons, preserving atlas geometry.
+for p in B.glob('LIGHT_SPINBUTTONBACKGROUND*.bmp'):
+ w,h=Image.open(p).size;sh=h//4;im=Image.new('RGB',(w,h),MAG);d=ImageDraw.Draw(im)
+ for state in range(4):
+  y=state*sh;fill=[(255,255,255),(232,243,242),(8,88,94),(247,248,250)][state];edge=[(202,208,216),(13,115,119),(8,88,94),(226,231,237)][state]
+  d.rounded_rectangle((0,y,w-1,y+sh-1),radius=2,fill=fill,outline=edge,width=1)
+ im.save(p)
+for direction in ['UP','DOWN','LEFT','RIGHT']:
+ p=B/('LIGHT_SPIN'+direction+'GLYPH.bmp');w,h=Image.open(p).size;sh=h//4;im=Image.new('RGB',(w,h),MAG);d=ImageDraw.Draw(im)
+ points={'UP':[(1,3),(3,1),(5,3)],'DOWN':[(1,2),(3,4),(5,2)],'LEFT':[(3,1),(1,3),(3,5)],'RIGHT':[(2,1),(4,3),(2,5)]}[direction]
+ for state in range(4):
+  ink=[(47,58,69),(13,115,119),(255,255,255),(167,176,187)][state];d.line([(x,y+state*sh) for x,y in points],fill=ink,width=1)
+ im.save(p)
+(OUT/'KUSH-SOURCE.txt').write_text('KushFluent is derived from the Modern theme already shipped in this ReactOS/Kush source tree. Original GPLv3 LICENSE is preserved. Existing controls, glyphs and dark variant retain their original authorship. Light frame, button, tab, checkbox, radio, slider and spin-button bitmaps are original procedural drawings from tools/theme/gen_kushfluent.py. No Microsoft Windows bitmap, logo or font is included.\n')
 for p in (OUT/'lang').glob('*.rc'):
  s=p.read_text().replace('\"Modern\"','\"Kush Fluent\"');p.write_text(s)
 print(OUT)
