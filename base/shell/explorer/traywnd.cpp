@@ -2493,6 +2493,39 @@ ChangePos:
      *    ##### message handling #####
      */
 
+    /* Kush: apply the stored desktop wallpaper at shell startup.
+       ReactOS never calls SPI_SETDESKWALLPAPER with the stored registry
+       value when a session starts, so gspv.hbmWallpaper stays NULL and the
+       desktop paints solid. Load HKCU\Control Panel\Desktop\Wallpaper,
+       expand %%SystemRoot%% etc., and apply it with fWinIni = 0 so the
+       REG_EXPAND_SZ registry value is left untouched.
+       Kill switch: HKCU\Software\Kush\Shell\NoWallpaperFix (DWORD != 0). */
+    static VOID KushApplyStoredWallpaper()
+    {
+        DWORD dwValue = 0, cbSize = sizeof(dwValue);
+        if (SHGetValueW(HKEY_CURRENT_USER, L"Software\\Kush\\Shell",
+                        L"NoWallpaperFix", NULL, &dwValue, &cbSize) == ERROR_SUCCESS &&
+            dwValue != 0)
+            return;
+
+        WCHAR awcRaw[MAX_PATH] = { 0 };
+        DWORD cbRaw = sizeof(awcRaw);
+        if (SHGetValueW(HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"Wallpaper", NULL, awcRaw, &cbRaw) != ERROR_SUCCESS ||
+            awcRaw[0] == 0)
+            return;
+
+        WCHAR awcPath[MAX_PATH];
+        if (!ExpandEnvironmentStringsW(awcRaw, awcPath, _countof(awcPath)) ||
+            GetFileAttributesW(awcPath) == INVALID_FILE_ATTRIBUTES)
+            return;
+
+        if (SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, awcPath, 0))
+            DbgPrint("KUSH-DBG KushApplyStoredWallpaper: applied %S\n", awcPath);
+        else
+            DbgPrint("KUSH-DBG KushApplyStoredWallpaper: SPI failed for %S\n", awcPath);
+    }
+
     LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
         HRESULT hRet;
@@ -2641,6 +2674,8 @@ ChangePos:
         }
 
         m_WinMMDevChgMsg = RegisterWindowMessageW(L"winmm_devicechange");
+
+        KushApplyStoredWallpaper();
 
         return TRUE;
     }
