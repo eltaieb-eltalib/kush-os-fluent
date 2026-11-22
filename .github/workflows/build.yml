@@ -52,6 +52,10 @@ jobs:
 
       - name: Source checkout
         uses: actions/checkout@v4
+        with:
+          # Do NOT clean the workspace: the RosBE toolchain we just built
+          # (RosBE-CI/) and the ccache dir live next to the source tree.
+          clean: false
 
       - name: Set up cache for ccache
         uses: actions/cache@v4
