@@ -830,7 +830,7 @@ public:
             /* Kush Fluent (phase 7): the centered task group's width comes
              * from the button count, so the tray must realign as it grows. */
             if (!KushTaskbar_IsClassicRequested())
-                PostMessageW(m_Tray->GetHWND(), TWM_KUSHREALIGN, 0, 0);
+                ::PostMessageW(m_Tray->GetHWND(), TWM_KUSHREALIGN, 0, 0);
             return iIndex;
         }
 
@@ -866,7 +866,7 @@ public:
                     UpdateButtonsSize(TRUE);
                     /* Kush Fluent (phase 7): realign the centered task group. */
                     if (!KushTaskbar_IsClassicRequested())
-                        PostMessageW(m_Tray->GetHWND(), TWM_KUSHREALIGN, 0, 0);
+                        ::PostMessageW(m_Tray->GetHWND(), TWM_KUSHREALIGN, 0, 0);
                     return TRUE;
                 }
 

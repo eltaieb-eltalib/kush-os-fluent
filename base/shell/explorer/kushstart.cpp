@@ -69,7 +69,6 @@ typedef struct _KS_STATE
     int iHot;             /* hovered view index, -1 none */
     int iSel;             /* keyboard selection, -1 none */
     int cRecentShown;     /* recent rows that fit (small screens show fewer) */
-    int cRecentShown;     /* recent rows that fit (small screens show fewer) */
     BOOL bHotAllApps;
     BOOL bHotPower;
     RECT rcSearch;
