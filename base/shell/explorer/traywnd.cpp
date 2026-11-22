@@ -255,6 +255,32 @@ public:
         SetFont(m_Font, FALSE);
     }
 
+    /* Kush Fluent (phase 7): flat owner-drawn tile matching the light
+     * taskbar, replacing the classic raised themed frame. Icon centered. */
+    VOID DrawItem(LPDRAWITEMSTRUCT dis)
+    {
+        RECT rc = dis->rcItem;
+        BOOL bPressed = (dis->itemState & ODS_SELECTED) != 0;
+        COLORREF clrBg = bPressed ? RGB(0xE2, 0xE2, 0xE2) : RGB(0xF3, 0xF3, 0xF3);
+        HBRUSH hbr = CreateSolidBrush(clrBg);
+        HPEN hpen = CreatePen(PS_SOLID, 1, bPressed ? RGB(0xC8, 0xC8, 0xC8) : clrBg);
+        HGDIOBJ hOldBr = SelectObject(dis->hDC, hbr);
+        HGDIOBJ hOldPen = SelectObject(dis->hDC, hpen);
+        RoundRect(dis->hDC, rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1, 8, 8);
+        SelectObject(dis->hDC, hOldPen);
+        SelectObject(dis->hDC, hOldBr);
+        DeleteObject(hpen);
+        DeleteObject(hbr);
+        if (m_ImageList != NULL)
+        {
+            int cxIcon = 0, cyIcon = 0;
+            ImageList_GetIconSize(m_ImageList, &cxIcon, &cyIcon);
+            int x = rc.left + ((rc.right - rc.left) - cxIcon) / 2;
+            int y = rc.top + ((rc.bottom - rc.top) - cyIcon) / 2;
+            ImageList_Draw(m_ImageList, 0, dis->hDC, x, y, ILD_TRANSPARENT);
+        }
+    }
+
     VOID Initialize()
     {
         // HACK & FIXME: CORE-18016
@@ -306,6 +332,10 @@ public:
             szStartCaption[0] = L'\0';
 
         DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | BS_PUSHBUTTON | BS_LEFT | BS_VCENTER;
+
+        /* Kush Fluent (phase 7): owner-drawn flat tile unless classic. */
+        if (!KushTaskbar_IsClassicRequested())
+            dwStyle |= BS_OWNERDRAW;
 
         // HACK & FIXME: CORE-18016
         m_hWnd = CreateWindowEx(
@@ -3700,6 +3730,17 @@ HandleTrayContextMenu:
 
     DECLARE_WND_CLASS_EX(L"Shell_TrayWnd", CS_DBLCLKS, COLOR_3DFACE)
 
+    LRESULT OnDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        if (wParam == IDC_STARTBTN && !KushTaskbar_IsClassicRequested())
+        {
+            m_StartButton.DrawItem((LPDRAWITEMSTRUCT) lParam);
+            return TRUE;
+        }
+        bHandled = FALSE;
+        return 0;
+    }
+
     BEGIN_MSG_MAP(CTrayWindow)
         if (m_StartMenuBand != NULL)
         {
@@ -3738,6 +3779,7 @@ HandleTrayContextMenu:
         MESSAGE_HANDLER(WM_NCPAINT, OnNcPaint)
         MESSAGE_HANDLER(WM_NCACTIVATE, OnNcActivate)
         MESSAGE_HANDLER(WM_CTLCOLORBTN, OnCtlColorBtn)
+        MESSAGE_HANDLER(WM_DRAWITEM, OnDrawItem)
         MESSAGE_HANDLER(WM_SYSCOLORCHANGE, OnSysColorChange)
         MESSAGE_HANDLER(WM_MOVING, OnMoving)
         MESSAGE_HANDLER(WM_SIZING, OnSizing)
