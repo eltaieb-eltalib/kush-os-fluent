@@ -2919,6 +2919,27 @@ ChangePos:
         DefWindowProc(uMsg, wParam, lParam);
         bHandled = TRUE;
 
+        /* Kush Fluent (phase 7): flatten the classic raised edge the
+         * WS_EX_WINDOWEDGE frame draws across the taskbar top - overpaint
+         * it with the bar color. The show-desktop button keeps its NC
+         * drawing below. */
+        if (!KushTaskbar_IsClassicRequested())
+        {
+            HDC hdcNc = GetWindowDC();
+            if (hdcNc)
+            {
+                RECT rcW;
+                GetWindowRect(&rcW);
+                RECT rcTop = { 0, 0, rcW.right - rcW.left, 4 };
+                HBRUSH hFlat = CreateSolidBrush(RGB(0xF3, 0xF3, 0xF3));
+                FillRect(hdcNc, &rcTop, hFlat);
+                DeleteObject(hFlat);
+                ReleaseDC(hdcNc);
+            }
+            DrawShowDesktopButton();
+            return 0;
+        }
+
         if (!m_Theme || g_TaskbarSettings.bLock)
         {
             DrawShowDesktopButton(); // We have to draw non-client area
