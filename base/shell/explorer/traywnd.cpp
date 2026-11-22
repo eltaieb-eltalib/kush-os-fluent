@@ -381,6 +381,13 @@ public:
         HDC hdc = BeginPaint(&ps);
         RECT rc;
         GetClientRect(&rc);
+        /* cover the whole client rect first so no themed frame pixels
+         * survive at the edges */
+        {
+            HBRUSH hBg = CreateSolidBrush(RGB(0xF3, 0xF3, 0xF3));
+            FillRect(hdc, &rc, hBg);
+            DeleteObject(hBg);
+        }
         DRAWITEMSTRUCT dis;
         ZeroMemory(&dis, sizeof(dis));
         dis.hDC = hdc;
@@ -401,10 +408,23 @@ public:
         return 1;
     }
 
+    LRESULT OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        /* Kush Fluent (phase 7): ReactOS themed buttons draw their frame in
+         * WM_NCPAINT - swallow it so no themed border appears. */
+        if (KushTaskbar_IsClassicRequested())
+        {
+            bHandled = FALSE;
+            return 0;
+        }
+        return 0;
+    }
+
     BEGIN_MSG_MAP(CStartButton)
         MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLButtonDown)
         MESSAGE_HANDLER(WM_PAINT, OnPaint)
         MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
+        MESSAGE_HANDLER(WM_NCPAINT, OnNcPaint)
     END_MSG_MAP()
 };
 
