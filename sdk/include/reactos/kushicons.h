@@ -5,6 +5,7 @@
 #include <windef.h>
 #include <winbase.h>
 #include <winreg.h>
+#include <wingdi.h>
 #include <winuser.h>
 #define KUSH_CLASSIC_ICON_OFFSET 40000
 static __inline BOOL KushClassicIcons(void)
@@ -58,6 +59,36 @@ static __inline HANDLE KushLoadImageA(HINSTANCE module, LPCSTR name, UINT kind, 
     if (kind == IMAGE_ICON && !(flags & LR_LOADFROMFILE) && IS_INTRESOURCE(name))
         name = MAKEINTRESOURCEA(KushIconResourceId(module, (UINT)(ULONG_PTR)name));
     return LoadImageA(module, name, kind, cx, cy, flags);
+}
+/* Static ICON controls are created inside user32, outside the opt-in macros.
+ * Refresh only known, non-interactive artwork. Keep the original pixel size and
+ * shared-handle ownership; a new ClassicIcons window keeps its template icon. */
+static __inline void KushSetDialogIcon(HWND dialog, INT controlId, HINSTANCE module, UINT iconId)
+{
+    HWND control;
+    HICON oldIcon, newIcon;
+    ICONINFO info;
+    BITMAP bitmap;
+    WCHAR className[16];
+    INT cx = 0, cy = 0;
+    if (KushClassicIcons()) return;
+    control = GetDlgItem(dialog, controlId);
+    if (!control || (GetWindowLongPtrW(control, GWL_STYLE) & SS_TYPEMASK) != SS_ICON ||
+        !GetClassNameW(control, className, 16) || lstrcmpiW(className, L"Static")) return;
+    oldIcon = (HICON)SendMessageW(control, STM_GETICON, 0, 0);
+    if (oldIcon && GetIconInfo(oldIcon, &info))
+    {
+        if (GetObjectW(info.hbmColor ? info.hbmColor : info.hbmMask, sizeof(bitmap), &bitmap))
+        {
+            cx = bitmap.bmWidth;
+            cy = info.hbmColor ? bitmap.bmHeight : bitmap.bmHeight / 2;
+        }
+        if (info.hbmColor) DeleteObject(info.hbmColor);
+        if (info.hbmMask) DeleteObject(info.hbmMask);
+    }
+    newIcon = (HICON)KushLoadImageW(module, MAKEINTRESOURCEW(iconId), IMAGE_ICON,
+        cx, cy, LR_SHARED);
+    if (newIcon) SendMessageW(control, STM_SETICON, (WPARAM)newIcon, 0);
 }
 #ifndef KUSH_ICONS_NO_LOAD_MACROS
 #define LoadIconW KushLoadIconW

@@ -24,6 +24,7 @@
  */
 
 #include "main.h"
+#include "kush_static_icons.h"
 
 #define ID_BLINK_TIMER 345
 
@@ -78,6 +79,7 @@ KeyboardSpeedProc(IN HWND hwndDlg,
     switch (uMsg)
     {
         case WM_INITDIALOG:
+            KushRefreshMainStaticIcons(hwndDlg);
             pSpeedData = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(SPEED_DATA));
             SetWindowLongPtr(hwndDlg, DWLP_USER, (LONG_PTR)pSpeedData);
 
@@ -325,6 +327,7 @@ KeybHardwareProc(IN HWND hwndDlg,
     switch(uMsg)
     {
         case WM_INITDIALOG:
+            KushRefreshMainStaticIcons(hwndDlg);
             /* Create the hardware page */
             DeviceCreateHardwarePageEx(hwndDlg,
                                        Guids,
