@@ -61,6 +61,7 @@ INT_PTR CALLBACK InetTimePageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 
 /* timedate.c */
+BOOL KushDateTimeModern(VOID);
 #if DBG
 VOID DisplayWin32ErrorDbg(DWORD dwErrorCode, const char *file, int line);
 #define DisplayWin32Error(e) DisplayWin32ErrorDbg(e, __FILE__, __LINE__);
