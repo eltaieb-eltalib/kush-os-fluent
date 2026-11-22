@@ -23,6 +23,16 @@ for p in (OUT/'textfiles/Light').glob('*.INI'):
  s=s.replace('BorderColor = 239 238 243','BorderColor = 247 248 250').replace('FillColor = 239 238 243','FillColor = 247 248 250')
  # The pale Kush taskbar needs dark clock text, unlike the inherited Modern tray.
  s=re.sub(r'(\[TrayNotify::Clock\][^\[]*?TextColor\s*=\s*)[^\n]*',r'\g<1>30 35 41',s)
+ s=s.replace('TextColor = 127 124 115','TextColor = 30 35 41')
+ s=s.replace('EdgeShadowColor = 165 175 185','EdgeShadowColor = 226 231 237')
+ s=s.replace('BorderColor = 150 150 150','BorderColor = 202 208 216')
+ for part in ['ScrollBar.GripperHorz','ScrollBar.GripperVert']:
+  token='['+part+']'
+  start=s.find(token);end=s.find('\n[',start+1)
+  if start >= 0:
+   end=len(s) if end < 0 else end
+   section=s[start:end]
+   if 'TransparentColor' not in section:s=s[:start]+section+'\nTransparentColor = 255 0 255\n'+s[end:]
  p.write_text(s)
 B=OUT/'bitmaps/Light'
 MAG=(255,0,255); ACTIVE=(243,246,250); INACTIVE=(246,247,249); BORDER=(202,208,216)
@@ -55,6 +65,45 @@ def buttons(name,count,caption=False,close=False):
   im.paste(tile,(0,i*sh))
  im.save(p)
 buttons('BUTTON',5);buttons('CAPTIONBUTTON',8,caption=True);buttons('CLOSEBUTTON',8,caption=True,close=True);buttons('SMALLCLOSEBUTTON',8,caption=True,close=True)
+# Flat interior chrome, original procedural artwork. Preserve every atlas size.
+def flat(name,color=(247,248,250)):
+ p=B/('LIGHT_'+name+'.bmp');Image.new('RGB',Image.open(p).size,color).save(p)
+for n in ['TOOLBARBACKGROUND','EXPLORERBARTOOLBARBACKGROUND','SCROLLSHAFTHORIZONTAL','SCROLLSHAFTVERTICAL']:
+ flat(n)
+for n in ['TOOLBARGRIPPER','TOOLBARGRIPPERVERT','SCROLLTHUMBGRIPPERHORIZONTAL','SCROLLTHUMBGRIPPERVERTICAL']:
+ flat(n,MAG)
+for n in ['TOOLBARBUTTONS','TOOLBARBUTTONSSPLIT','TOOLBARBUTTONSSPLITDROPDOWN','EXPLORERBARTOOLBARBUTTONS','EXPLORERBARTOOLBARBUTTONSSPLIT','EXPLORERBARTOOLBARBUTTONSSPLITDROPDOWN']:
+ p=B/('LIGHT_'+n+'.bmp');w,h=Image.open(p).size;sh=h//6;im=Image.new('RGB',(w,h),MAG);d=ImageDraw.Draw(im)
+ for state in [1,2,4,5]:
+  color=(231,239,242) if state==1 else (218,237,237)
+  d.rounded_rectangle((0,state*sh,w-1,(state+1)*sh-1),radius=3,fill=color)
+ im.save(p)
+for n,vertical in [('SCROLLTHUMBVERTICAL',True),('SCROLLTHUMBHORIZONTAL',False)]:
+ p=B/('LIGHT_'+n+'.bmp');w,h=Image.open(p).size;sh=h//4;im=Image.new('RGB',(w,h),(247,248,250));d=ImageDraw.Draw(im)
+ for state,color in enumerate([(151,162,175),(122,135,150),(87,108,125),(210,216,224)]):
+  y=state*sh
+  box=(w//2-2,y+2,w//2+2,y+sh-3) if vertical else (2,y+sh//2-2,w-3,y+sh//2+2)
+  d.rounded_rectangle(box,radius=2,fill=color)
+ im.save(p)
+def arrow_atlas(name,count=16):
+ p=B/('LIGHT_'+name+'.bmp');w,h=Image.open(p).size;sh=h//count;im=Image.new('RGB',(w,h),(247,248,250));d=ImageDraw.Draw(im)
+ for state in range(count):
+  direction=state//4;cx=w//2;cy=state*sh+sh//2;r=max(2,min(w,sh)//4);col=(47,58,69) if state%4!=3 else (167,176,187)
+  coords=[(-r,1),(0,-r+1),(r,1)]
+  if direction==1:coords=[(-r,-1),(0,r-1),(r,-1)]
+  elif direction==2:coords=[(1,-r),(-r+1,0),(1,r)]
+  elif direction==3:coords=[(-1,-r),(r-1,0),(-1,r)]
+  d.line([(cx+x,cy+y) for x,y in coords],fill=col,width=1)
+ im.save(p)
+for n in ['SCROLLARROWS','SCROLLARROWGLYPHS','SCROLLARROWGLYPHSSMALL']:arrow_atlas(n)
+p=B/'LIGHT_COMBOBUTTON.bmp';w,h=Image.open(p).size;sh=h//4;im=Image.new('RGB',(w,h),(247,248,250));d=ImageDraw.Draw(im)
+for state in range(4):
+ d.rounded_rectangle((0,state*sh,w-1,(state+1)*sh-1),radius=3,fill=(255,255,255) if state==0 else (233,240,243),outline=(207,214,222))
+im.save(p)
+p=B/'LIGHT_COMBOBUTTONGLYPH.bmp';w,h=Image.open(p).size;sh=h//4;im=Image.new('RGB',(w,h),MAG);d=ImageDraw.Draw(im)
+for state in range(4):
+ cx=w//2;cy=state*sh+sh//2;d.line([(cx-2,cy-1),(cx,cy+1),(cx+2,cy-1)],fill=(47,58,69) if state!=3 else (167,176,187),width=1)
+im.save(p)
 (OUT/'KUSH-SOURCE.txt').write_text('KushFluent is derived from the Modern theme already shipped in this ReactOS/Kush source tree. Original GPLv3 LICENSE is preserved. Existing controls, glyphs and dark variant retain their original authorship. Light frame and push-button bitmaps are original procedural drawings from tools/theme/gen_kushfluent.py. No Microsoft Windows bitmap, logo or font is included.\n')
 for p in (OUT/'lang').glob('*.rc'):
  s=p.read_text().replace('\"Modern\"','\"Kush Fluent\"');p.write_text(s)

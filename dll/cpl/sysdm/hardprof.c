@@ -457,7 +457,7 @@ HardwareProfileProperties(
     psh.dwFlags = PSH_PROPTITLE | PSH_USEICONID | PSH_USECALLBACK;
     psh.hwndParent = hwndDlg;
     psh.hInstance = hApplet;
-    psh.pszIcon = MAKEINTRESOURCEW(IDI_HARDPROF);
+    psh.pszIcon = MAKEINTRESOURCEW(KushOwnIconId(IDI_HARDPROF));
     psh.pszCaption = pProfileData->pProfiles[pProfileData->dwSelectedProfileIndex].szFriendlyName;
     psh.nPages = 1;
     psh.nStartPage = 0;

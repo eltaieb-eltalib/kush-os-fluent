@@ -375,7 +375,7 @@ KeyboardApplet(HWND hwnd, UINT uMsg, LPARAM wParam, LPARAM lParam)
     psh.dwFlags =  PSH_PROPTITLE | PSH_USEICONID | PSH_USECALLBACK;
     psh.hwndParent = hwnd;
     psh.hInstance = hApplet;
-    psh.pszIcon = MAKEINTRESOURCE(IDC_CPLICON_2);
+    psh.pszIcon = MAKEINTRESOURCE(KushOwnIconId(IDC_CPLICON_2));
     psh.pszCaption = MAKEINTRESOURCE(IDS_CPLNAME_2);
     psh.nStartPage = 0;
     psh.phpage = hpsp;

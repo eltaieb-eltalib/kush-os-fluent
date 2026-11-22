@@ -23,6 +23,8 @@ Implements the navigation band of the cabinet window
 */
 
 #include "precomp.h"
+#define KUSH_ICONS_NO_LOAD_MACROS
+#include <kushicons.h>
 #include <commoncontrols.h>
 #include <shlwapi_undoc.h>
 #include <shellapi.h>
@@ -625,9 +627,9 @@ void CAddressBand::CreateGoButton()
     HINSTANCE             shellInstance;
 
     shellInstance = _AtlBaseModule.GetResourceInstance();
-    m_himlNormal = ImageList_LoadImageW(shellInstance, MAKEINTRESOURCEW(IDB_GOBUTTON_NORMAL),
+    m_himlNormal = ImageList_LoadImageW(shellInstance, MAKEINTRESOURCEW(KushBitmapResourceId(_AtlBaseModule.GetResourceInstance(), IDB_GOBUTTON_NORMAL)),
                                         20, 0, RGB(255, 0, 255), IMAGE_BITMAP, LR_CREATEDIBSECTION);
-    m_himlHot = ImageList_LoadImageW(shellInstance, MAKEINTRESOURCEW(IDB_GOBUTTON_HOT),
+    m_himlHot = ImageList_LoadImageW(shellInstance, MAKEINTRESOURCEW(KushBitmapResourceId(_AtlBaseModule.GetResourceInstance(), IDB_GOBUTTON_HOT)),
                                      20, 0, RGB(255, 0, 255), IMAGE_BITMAP, LR_CREATEDIBSECTION);
 
     fGoButton = CreateWindowEx(WS_EX_TOOLWINDOW, TOOLBARCLASSNAMEW, 0, WS_CHILD | WS_CLIPSIBLINGS |
