@@ -264,13 +264,26 @@ public:
 
         SetWindowTheme(m_hWnd, L"Start", NULL);
 
-        /* Kush Fluent (phase 7): the icon-only centered Start uses the Kush
-         * mark bitmap; the classic taskbar keeps the original resource. */
-        m_ImageList = ImageList_LoadImageW(hExplorerInstance,
-                                           MAKEINTRESOURCEW(KushTaskbar_IsClassicRequested() ? IDB_START : IDB_START_KUSH),
-                                           0, 0, 0,
-                                           IMAGE_BITMAP,
-                                           LR_LOADTRANSPARENT | LR_CREATEDIBSECTION);
+        if (KushTaskbar_IsClassicRequested())
+        {
+            m_ImageList = ImageList_LoadImageW(hExplorerInstance,
+                                               MAKEINTRESOURCEW(IDB_START),
+                                               0, 0, 0,
+                                               IMAGE_BITMAP,
+                                               LR_LOADTRANSPARENT | LR_CREATEDIBSECTION);
+        }
+        else
+        {
+            /* Kush Fluent (phase 7): the centered Start button carries the
+             * teal Fluent mark icon, not the legacy bitmap. The icon is a
+             * BMP-entry ICO so the XP-era loader accepts it. */
+            m_ImageList = ImageList_Create(24, 24, ILC_COLOR32 | ILC_MASK, 1, 1);
+            HICON hStartIcon = (HICON)LoadImageW(hExplorerInstance,
+                                                 MAKEINTRESOURCEW(IDI_KUSH_START),
+                                                 IMAGE_ICON, 24, 24, LR_DEFAULTCOLOR);
+            if (m_ImageList != NULL && hStartIcon != NULL)
+                ImageList_ReplaceIcon(m_ImageList, -1, hStartIcon);
+        }
 
         BUTTON_IMAGELIST bil = {m_ImageList, {1,1,1,1}, BUTTON_IMAGELIST_ALIGN_LEFT};
         SendMessageW(BCM_SETIMAGELIST, 0, (LPARAM) &bil);

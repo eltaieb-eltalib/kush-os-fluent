@@ -61,7 +61,7 @@ def main():
         src = colorize(src, color)
         png = cairosvg.svg2png(bytestring=src.encode(), output_width=256, output_height=256)
         img = Image.open(io.BytesIO(png)).convert("RGBA")
-        img.save(os.path.join(outdir, "%s.ico" % name), sizes=SIZES)
+        img.save(os.path.join(outdir, "%s.ico" % name), sizes=SIZES, bitmap_format="bmp")
         print("wrote %s.ico (%s, %s)" % (name, svg, color))
 
 
