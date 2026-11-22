@@ -304,7 +304,7 @@ public:
              * BMP-entry ICO so the XP-era loader accepts it. Strip the
              * theme so ReactOS does not paint the themed Start frame over
              * our owner-drawn tile. */
-            SetWindowTheme(m_hWnd, L" ", L" ");
+            SetWindowTheme(m_hWnd, L"", L"");
             m_ImageList = ImageList_Create(24, 24, ILC_COLOR32 | ILC_MASK, 1, 1);
             HICON hStartIcon = (HICON)LoadImageW(hExplorerInstance,
                                                  MAKEINTRESOURCEW(IDI_KUSH_START),
