@@ -30,3 +30,4 @@ BOOL KushStart_IsOpen(VOID);
 /* Returns TRUE when the user asked for the classic (left-aligned)
  * taskbar layout: HKCU\Software\Kush\Shell\ClassicTaskbar = 1. */
 BOOL KushTaskbar_IsClassicRequested(VOID);
+BOOL KushTaskbar_UseCompactTasks(VOID);

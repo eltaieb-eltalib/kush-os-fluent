@@ -116,6 +116,16 @@ KushTaskbar_IsClassicRequested(VOID)
     return FALSE;
 }
 
+/* Keep compact task-button painting out of classic and high-contrast modes. */
+BOOL
+KushTaskbar_UseCompactTasks(VOID)
+{
+    HIGHCONTRASTW hc = { sizeof(hc) };
+    return !KushTaskbar_IsClassicRequested() &&
+        !(SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(hc), &hc, 0) &&
+          (hc.dwFlags & HCF_HIGHCONTRASTON));
+}
+
 /* ---------------- background (static Acrylic) --------------------- */
 
 static VOID
