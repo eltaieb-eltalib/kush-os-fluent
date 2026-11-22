@@ -1135,6 +1135,9 @@ KushEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
     if (uMsg == WM_CHAR)
         DbgPrint("KUSH-DBG edit WM_CHAR wp=%u tick=%lu\n", (UINT)wParam, GetTickCount());
+    if (uMsg == EM_REPLACESEL || uMsg == WM_PASTE || uMsg == WM_SETTEXT ||
+        uMsg == WM_SYSCHAR || uMsg == WM_IME_CHAR || uMsg == WM_DEADCHAR)
+        DbgPrint("KUSH-DBG edit msg=0x%x wp=%u tick=%lu\n", uMsg, (UINT)wParam, GetTickCount());
     if (uMsg == WM_GETDLGCODE)
         return DLGC_WANTALLKEYS;
     return CallWindowProcW(g_ks.pfnOldEdit, hwnd, uMsg, wParam, lParam);
@@ -1198,6 +1201,7 @@ KushStartProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             WCHAR szText[128];
             GetWindowTextW(p->hwndEdit, szText, _countof(szText));
+            DbgPrint("KUSH-DBG EN_CHANGE text='%ls' tick=%lu\n", szText, GetTickCount());
             KushApplyFilter(p, szText);
             p->iSel = -1;
             p->iHot = -1;
