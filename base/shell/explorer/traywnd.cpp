@@ -288,9 +288,9 @@ public:
         m_hWnd = NULL;
         SubclassWindow(hWnd);
 
-        SetWindowTheme(m_hWnd, L"Start", NULL);
-
         if (KushTaskbar_IsClassicRequested())
+        {
+            SetWindowTheme(m_hWnd, L"Start", NULL);
         {
             m_ImageList = ImageList_LoadImageW(hExplorerInstance,
                                                MAKEINTRESOURCEW(IDB_START),
@@ -302,7 +302,10 @@ public:
         {
             /* Kush Fluent (phase 7): the centered Start button carries the
              * teal Fluent mark icon, not the legacy bitmap. The icon is a
-             * BMP-entry ICO so the XP-era loader accepts it. */
+             * BMP-entry ICO so the XP-era loader accepts it. Strip the
+             * theme so ReactOS does not paint the themed Start frame over
+             * our owner-drawn tile. */
+            SetWindowTheme(m_hWnd, L" ", L" ");
             m_ImageList = ImageList_Create(24, 24, ILC_COLOR32 | ILC_MASK, 1, 1);
             HICON hStartIcon = (HICON)LoadImageW(hExplorerInstance,
                                                  MAKEINTRESOURCEW(IDI_KUSH_START),
