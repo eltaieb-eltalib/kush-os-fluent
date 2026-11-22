@@ -39,7 +39,7 @@ jobs:
       - name: Configure
         run: |
           mkdir build && cd build
-          ROS_ARCH=i386 ../configure.sh -DENABLE_CCACHE=1
+          ROS_ARCH=amd64 ../configure.sh -DENABLE_CCACHE=1
 
       - name: Build bootcd
         run: cd build && ninja -j2 bootcd
