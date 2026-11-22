@@ -179,7 +179,7 @@ Acrylic محتاج blur **حي** للمحتوى اللي ورا النافذة،
 | الخلفية الأصلية Kush Flow | ✅ اتعملت (`modules/wallpapers/Kush-Flow*.bmp`، `tools/design/gen_wallpaper.py`) |
 | 0 الأساس | 🔨 جزئي: مفاتيح الريجستري `HKCU\Software\Kush\Shell` (`ClassicStartMenu=1` / `ClassicTaskbar=1`) شغالة في كود المرحلة 7 |
 | 1 الخطوط | 🔨 الخطوط اتضافت واترفعت: Inter (عادي/Medium/SemiBold) و Noto Sans Arabic (عادي/SemBd) في `media/fonts/` + تسجيل بدائل في `media/fonts/font.inf`. باقي إثبات العرض الفعلي بصورة QEMU |
-| 6 الأيقونات | 🔨 مجموعة Fluent UI System Icons (MIT) اتولّدت بـ `tools/icons/build_fluent_icons.py` (حقن لون التعبئة — SVGs بتاعت Fluent ما فيها fill افتراضي)، اتتحقق منها بالبكسل (زر Start تيل #0D7377، CMD بأيقونة كونسول). تركيبها في shell32 للنظام كله لسه |
+| 6 الأيقونات | 🔨 مجموعة Fluent UI System Icons (MIT) اتولّدت بـ `tools/icons/build_fluent_icons.py` (حقن لون التعبئة — SVGs بتاعت Fluent ما فيها fill افتراضي)، اتتحقق منها بالبكسل (زر Start تيل #0D7377، CMD بأيقونة كونسول). تركيبها في shell32 للنظام كله لسه. **واتجهّزت مجموعة أيقونات shell32 الملوّنة الأصلية** (16 أيقونة مرسومة برمجياً بالكامل بـ PIL في `tools/icons/build_shell32_icons.py` — بدون أصول طرف ثالث، المصدر هو السكربت نفسه)، وملفات ICO متخزنة في `dll/win32/shell32/res/icons/kush/`. تكاملها مع فهارس shell32 بعد إثبات الإقلاع الحالي |
 | 7 الواجهة (Start + شريط المهام) | 🔨 الكود مرفوع لـ main (`kushstart.cpp` + `traywnd.cpp` + `taskswnd.cpp`) بعد استرجاعه كامل من انهيار بيئة العمل (22 نوفمبر ~03:56). البناء شغال حالياً — **التحقق بالصور في QEMU لسه ما تم**. التفاصيل: Start جديد في نص الشاشة (بحث + Pinned + Recommended + زر طاقة)، شريط مهام فاتح 48px بأيقونات في النص ومؤشر accent تحت البرنامج النشط |
 | 2، 3، 4، 5أ، 8، 5ب، 9 | ⏳ ما بدأت. الترتيب: 7 ← 0 ← 1 ← 3 ← 4 ← 5أ ← 6 ← 2 ← 8 ← 5ب ← 9 |
 
