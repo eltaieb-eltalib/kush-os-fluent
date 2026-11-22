@@ -24,6 +24,7 @@ toolbar, and address band for an explorer window
 */
 
 #include "precomp.h"
+#include <kushexplorer.h>
 
 #if 1
 
@@ -1174,7 +1175,10 @@ HRESULT STDMETHODCALLTYPE CInternetToolbar::InitNew()
     hResult = CAddressBand_CreateInstance(IID_PPV_ARG(IUnknown, &navigationBar));
     if (FAILED_UNEXPECTEDLY(hResult))
         return hResult;
-    AddDockItem(navigationBar, ITBBID_ADDRESSBAND, CDockSite::ITF_NEWBANDALWAYS | CDockSite::ITF_GRIPPERALWAYS);
+    DWORD addressFlags = CDockSite::ITF_NEWBANDALWAYS | CDockSite::ITF_GRIPPERALWAYS;
+    if (KushModernExplorer())
+        addressFlags |= CDockSite::ITF_NOTITLE;
+    AddDockItem(navigationBar, ITBBID_ADDRESSBAND, addressFlags);
     fNavigationBar.Attach(navigationBar.Detach());
     hResult = IUnknown_GetWindow(fNavigationBar, &fNavigationWindow);
 
