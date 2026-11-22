@@ -8,14 +8,14 @@ this repo.**
 
 **This repo is the complete Kush 1.1 source tree**: ReactOS master commit `344ebfe5`
 plus every Kush 1.1 modification, so it builds on its own (no separate ReactOS clone).
-(The `.github` CI workflows of ReactOS are intentionally not included.)
+(The upstream ReactOS CI workflows are not included. Kush has its own manually triggered workflow.)
 
 **المستودع ده فيه النظام كامل:** كود ReactOS (commit `344ebfe5`) ومعاه كل تعديلات Kush 1.1. بتعمل clone
 للمستودع ده بس وبتبني على طول.
 
 Build (Linux, mingw-w64 **posix** toolchain, cmake, ninja, bison, flex, libgmp-dev):
 
-1. `git clone https://github.com/eltaieb-eltalib/last-kushos.git && mkdir build && cd build`
+1. `git clone https://github.com/eltaieb-eltalib/kush-os-fluent.git last-kushos && mkdir build && cd build`
 2. `cmake -G Ninja -DARCH=amd64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../last-kushos/toolchain-gcc.cmake -DENABLE_CCACHE=0 -DDLL_EXPORT_VERSION=0x600 ../last-kushos`
 3. `ninja bootcd` → `bootcd.iso` (or use RosBE x86_64: `configure.sh` then `ninja bootcd`).
 4. Make a GPT USB image (1.5 GB, one EFI System partition, FAT32) and copy
@@ -29,7 +29,9 @@ Build (Linux, mingw-w64 **posix** toolchain, cmake, ninja, bison, flex, libgmp-d
 خطوط Inter و Noto Sans Arabic (OFL) مع بدائل مسجلة في `font.inf`، ومجموعة أيقونات Fluent UI System Icons (MIT)
 متولدة بـ `tools/icons/build_fluent_icons.py`. كل ميزة وراها مفتاح ريجستري (`HKCU\Software\Kush\Shell`) يرجّع الشكل الكلاسيكي.
 **الأصول كلها قانونية**: Fluent UI System Icons (MIT)، Inter (OFL)، Noto Sans Arabic (OFL) — إشعارات الرخص في `media/fonts/` و `media/icons/`.
-حالة التحقق: بانتظار صور QEMU من أول ISO بعد الاسترجاع — ما بيتم إعلان أي مرحلة "تمت" بدون صورة إثبات.
+حالة التحقق (22 نوفمبر 2026): اتأكدت بصور QEMU من الخلفية، وأيقونات سطح المكتب وأيقونة Explorer في Start، ورسم عدسة البحث، وزر Start المسطح والحافة العلوية المسطحة للشريط. اتجرّبت دورة Start ← زر الطاقة ← إلغاء ← Start بنجاح. اتوحّدت خلفية منطقة الإشعارات والساعة مع الشريط في `trayntfy.cpp` و`trayclock.cpp` و`syspager.cpp`، واتشالت الحافة الغائرة. باقي زر إظهار سطح المكتب وأيقونات الإشعارات الكلاسيكية، واختبارات المراحل الأوسع. دي نسخة تطوير WIP، ما إصدار مستقر مكتمل.
+
+القرار التقني: الرسم الخفيف بـGDI لمساحة البحث، ورسم زر Start والتحكم في `WM_NCPAINT` لإزالة الإطار القديم. الألوان الجديدة محكومة بمفتاح `ClassicTaskbar` الحالي. المصدر العام هو المستودع ده؛ نسخ ISO التجريبية الاحتياطية ليست إصدارات عامة. البناء السحابي لم ينتج ISO ناجحاً حتى آخر تحديث.
 
 ## Modifications (vs ReactOS master 344ebfe5)
 
