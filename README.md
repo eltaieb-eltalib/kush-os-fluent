@@ -24,6 +24,26 @@ Build (Linux, mingw-w64 **posix** toolchain, cmake, ninja, bison, flex, libgmp-d
 
 ## تصميم Fluent (شغل جاري — WIP)
 
+### تحديث 22 نوفمبر: بقايا Explorer وفضاءات الأسماء
+
+أضيفت20موردا من Fluent الرسمي إلى مسارات عرض مختارة:12موردا في shell32 و8في امتداد NT Object Namespace وSystem Registry. الأصل وأرقامه باقية، والنسخ الجديدة عند الرقم الأصلي +40000. المجموعة تشمل موارد Floppy وFolder Options وPrinters وTaskbar وموارد أخرى، لكن العدد جرد مصدر وليس ضمانا لظهور كل مورد في صورة الاختبار.
+
+صور QEMU تثبت تغير Floppy وControl Panel وNT Object Namespace وSystem Registry داخل My Computer، وتغير Folder Options وTaskbar and Start Menu داخل Control Panel. اختُبر `ClassicIcons=1` في نافذة Explorer جديدة فعادت الصور الأصلية، ثم0فعادت Fluent. فُتحت البرامج الأربعة، ولم يظهر `KUSH-EXC` في هذه الدورة. النسخة الجديدة نُسخت احتياطيا خصوصيا ونُزلت وطابقت بصمتها قبل الإقلاع.
+
+المولد `tools/icons/build_shell_fluent.py` يستخدم نفس الحزمة الرسمية والرخصة المثبتتين أدناه، ويحفظ SVG وخريطة الموارد في `media/icons/fluent-system/shell-map.json`. صورة Folder Options تجمع رمزي folder وsettings الرسميين. مسار الاستخراج المسموح توسع فقط إلى ntobjshex.dll الموجود في System32؛ لا يحول أيقونات ملفات المستخدم أو البرامج العشوائية.
+
+هذه ليست نهاية الأيقونات القديمة. صورة قرص ReactOS(X) ما زالت قديمة فعليا رغم وجود مورد RAM disk جديد، وPrinters وNetwork Connections وبعض البرامج ومناطق أخرى ما زالت تحتاج تحديد مسارها وتحديثه. لا يُعد تغيير مورد دليلا أن كل مساراته تستخدمه.
+
+![Explorer: بقايا My Computer بعد استبدالها](docs/design/2026-11-22-shell-icons-explorer.png)
+
+![Control Panel: Folder Options الجديد](docs/design/2026-11-22-shell-icons-control.png)
+
+![Explorer: رجوع موارد الدفعة الأصلية](docs/design/2026-11-22-shell-icons-classic.png)
+
+![Explorer: إعادة تفعيل Fluent](docs/design/2026-11-22-shell-icons-modern.png)
+
+![آخر Control Panel: Taskbar جديد وPrinters ما زال قديما، مع البرامج الأربعة مفتوحة](docs/design/2026-11-22-shell-icons-bottom.png)
+
 ### تحديث 22 نوفمبر: الأيقونات الثابتة داخل Keyboard وMouse وSystem
 
 المشكلة: بعض صور `ICON` في قوالب الحوارات يحملها مدير الحوارات مباشرة، فتظل قديمة رغم تحديث موارد الوحدة ومسارات `LoadIcon`. اتصلحت دفعة محددة من الداخل بدل الاكتفاء بقائمة Control Panel.
