@@ -657,24 +657,29 @@ KushLoadItems(KS_STATE *p)
             { L"\\calc.exe",    IDI_KUSH_CALC },
             { L"\\control.exe", IDI_KUSH_FILES },
         };
-        int i, j;
-        for (i = 0; i < p->cAll; i++)
+        int i, j, a;
+        for (a = 0; a < 2; a++)
         {
-            for (j = 0; j < (int)_countof(known); j++)
+            KS_ITEM *items = a ? p->all : p->pinned;
+            int count = a ? p->cAll : p->cPinned;
+            for (i = 0; i < count; i++)
             {
-                SIZE_T len = wcslen(p->all[i].szPath), exl = wcslen(known[j].szExe);
-                if (len > exl && _wcsicmp(p->all[i].szPath + len - exl, known[j].szExe) == 0)
+                for (j = 0; j < (int)_countof(known); j++)
                 {
-                    HICON hFluent = (HICON)LoadImageW(hExplorerInstance,
-                                                      MAKEINTRESOURCEW(known[j].idIcon),
-                                                      IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
-                    if (hFluent)
+                    SIZE_T len = wcslen(items[i].szPath), exl = wcslen(known[j].szExe);
+                    if (len > exl && _wcsicmp(items[i].szPath + len - exl, known[j].szExe) == 0)
                     {
-                        if (p->all[i].hIcon)
-                            DestroyIcon(p->all[i].hIcon);
-                        p->all[i].hIcon = hFluent;
+                        HICON hFluent = (HICON)LoadImageW(hExplorerInstance,
+                                                          MAKEINTRESOURCEW(known[j].idIcon),
+                                                          IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
+                        if (hFluent)
+                        {
+                            if (items[i].hIcon)
+                                DestroyIcon(items[i].hIcon);
+                            items[i].hIcon = hFluent;
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
